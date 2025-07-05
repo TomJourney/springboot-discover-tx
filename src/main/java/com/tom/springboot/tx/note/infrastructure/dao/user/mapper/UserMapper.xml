@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.tom.springboot.tx.note.infrastructure.dao.user.mapper.UserMapper">
+
+    <select id="qryUserById" resultType="com.tom.springboot.tx.note.infrastructure.dao.user.mapper.UserPO">
+        select id, name
+          from user_tbl
+         where id = #{id}
+    </select>
+
+    <insert id="insertUser" parameterType="com.tom.springboot.tx.note.infrastructure.dao.user.mapper.UserPO">
+        insert
+          into user_tbl(id, name, mobile_phone, addr)
+        values (#{id}, #{name}, #{mobilePhone}, #{address})
+    </insert>
+</mapper>
