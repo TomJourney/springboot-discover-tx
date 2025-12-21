@@ -41,9 +41,6 @@ public class UserSupportImpl implements IUserSupport {
     @Override
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     public void saveNewUser(UserEntity userEntity) {
-        userMapper.insertUser(userConverter.toPO(userEntity));
-        UserAccountPO userAccountPO = UserAccountPO.builder().userId(userEntity.getId()).balance(new BigDecimal(random.nextInt(10000))).build();
-        userAccountMapper.insertUserAccount(userAccountPO);
-        log.info("保存用户信息及账户成功");
+
     }
 }

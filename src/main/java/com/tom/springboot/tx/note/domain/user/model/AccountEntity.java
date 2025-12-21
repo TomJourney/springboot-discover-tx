@@ -3,6 +3,8 @@ package com.tom.springboot.tx.note.domain.user.model;
 import lombok.Builder;
 import lombok.Getter;
 
+import java.math.BigDecimal;
+
 /**
  * @author Tom
  * @version 1.0.0
@@ -12,9 +14,8 @@ import lombok.Getter;
  */
 @Builder
 @Getter
-public class UserEntity {
-    private Integer user;
-    private String name;
-    private String mobilePhone;
-    private String address;
+public class AccountEntity {
+    private String accountId;
+    private String userId;
+    private BigDecimal balance;
 }
