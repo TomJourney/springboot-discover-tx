@@ -379,9 +379,133 @@ THIRD
 
 ---
 
+# 【7】预加载缓存
 
+可以使用putAll()方法插入多条记录的缓存。
 
+【例】使用Map添加多条记录到我们的缓存。
 
+```java
+public static void testPreloadCache() throws ExecutionException, InterruptedException {
+    // 创建cache加载器
+    CacheLoader<String, String> cacheLoader = new CacheLoader<>() {
+        @Override
+        public String load(String key) throws Exception {
+            System.out.println("load方法，创建缓存key-value键值对");
+            return key.toUpperCase();
+        }
+    };
+    // 根据cache加载器创建缓存
+    LoadingCache<String, String> loadingCache = CacheBuilder.newBuilder()
+            .refreshAfterWrite(3, TimeUnit.SECONDS) // 设置自动刷新时间为3秒
+            .build(cacheLoader);
+
+    Map<String, String> preloadMap = new HashMap<>();
+    preloadMap.put("first", "FIRST");
+    preloadMap.put("second", "SECOND");
+    // 预加载缓存(如应用启动时加载)
+    loadingCache.putAll(preloadMap);
+
+    System.out.println(loadingCache.get("first"));
+    System.out.println(loadingCache.get("second"));
+    System.out.println(loadingCache.getUnchecked("third"));
+}
+```
+
+【打印结果】
+
+```c++
+FIRST
+SECOND
+load方法，创建缓存key-value键值对
+THIRD
+
+```
+
+<br>
+
+---
+
+# 【8】缓存移除通知
+
+有些时候，当缓存项被移除时，我们需要采取相应动作。
+
+我们可以注册一个*RemovalListener*监听器来接受缓存项被移除的通知。我们也可以通过*getCause()*方法获取缓存被移除的原因。
+
+【例】获取缓存被移除的通知：当第4个元素因为超过缓存大小而被移除时，我们的程序会收到通知。
+
+```java
+public static void testRemovalNotification() throws ExecutionException, InterruptedException {
+    // 创建cache加载器
+    CacheLoader<String, String> cacheLoader = new CacheLoader<>() {
+        @Override
+        public String load(String key) throws Exception {
+            return key.toUpperCase();
+        }
+    };
+
+    // 新建缓存移除监听器
+    RemovalListener<String, String> removalListener = new RemovalListener<String, String>() {
+        @Override
+        public void onRemoval(RemovalNotification<String, String> notification) {
+            if (notification.wasEvicted()) {
+                System.out.printf("缓存移除原因：%s，键=%s \n", notification.getCause(), notification.getKey());
+                // SIZE, first
+            }
+        }
+    };
+
+    // 根据cache加载器创建缓存
+    LoadingCache<String, String> loadingCache = CacheBuilder.newBuilder()
+            .maximumSize(3) // 设置缓存大小为3
+            .removalListener(removalListener) // 传入缓存移除监听器用于构造缓存
+            .build(cacheLoader);
+
+    System.out.println(loadingCache.getUnchecked("first"));
+    System.out.println(loadingCache.getUnchecked("second"));
+    System.out.println(loadingCache.getUnchecked("third"));
+    System.out.println(loadingCache.getUnchecked("four"));
+}
+```
+
+【打印结果】
+
+```c++
+FIRST
+SECOND
+THIRD
+缓存移除原因：SIZE，键=first 
+FOUR
+
+```
+
+# 【9】补充
+
+下面有一些关于guava缓存的额外笔记
+
+1. 它是线程安全的；
+2. 我们可以通过put(k,v) 插入缓存；
+3. 可以使用*CacheStats* ( *hitRate()*, *missRate()*, ..) 衡量我们的缓存性能；
+
+# 【10】总结
+
+参考[深入Guava Cache的refresh和expire刷新机制](!https://blog.csdn.net/csdnlijingran/article/details/138545990)
+
+## 【10.1】缓存失效的3种方式
+
+1. expireAfterAccess表示多久没有访问（读或写）就失效
+2. expireAfterWrite表示多久没有更新就失效
+    expireAfterAccess和expireAfterWrite注意点如下：
+    使用场景：业务非常注重缓存的时效性
+    缺点：性能较差，缓存过期后，所有线程都要等待和锁争用，尽管guava可以保证只有一个线程load缓存（很好地防止缓存失效的瞬间大量请求穿透到后端引起雪崩效应），但是其他线程也要等待和锁争用
+3. refreshAfterWrite表示继上次更新后多久刷新
+    优点与缺点： 优点是refresh性能要比load好很多，guava保证只有一个线程refresh缓存，缺点是其他缓存返回旧值，这个旧值可能是很多之前的旧值（原因refresh动作不是自动轮询执行的，而是在get请求的时候才会检查是否需要refresh、如需要在refresh，其他线程直接返回旧值可能是很久之前的，有效减少等待和锁的争用，性能较好）
+4. 另外补充一下，load时value不能是null，否则get时会抛出异常，如果value值可能是null，则要用Optional包一下，避免通过try-catch处理null
+
+## 【10.2】获取缓存的2种方式
+
+1. get(key) 方法：
+2. getUnchecked(key)方法： 
 
 
 
