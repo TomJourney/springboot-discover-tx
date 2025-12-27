@@ -136,7 +136,9 @@ public static void testDiyWeightFunction() {
 
 ## 【2.3】通过缓存项的空闲时间来清除
 
-自定义缓存清除策略，移除空闲时间超过2ms的缓存项。
+自定义缓存清除策略，移除空闲时间超过2s的缓存项
+
+（<font color=red>expireAfterAccess(2, TimeUnit.SECONDS)方法：超过2s没有访问或读写某缓存项，则该缓存项失效 </font>）。
 
 ```java
 public static void testEvictByGtIdle() throws InterruptedException {
@@ -151,7 +153,7 @@ public static void testEvictByGtIdle() throws InterruptedException {
 
     // 根据cache加载器创建缓存
     LoadingCache<String, String> cache = CacheBuilder.newBuilder()
-            .expireAfterAccess(2, TimeUnit.SECONDS) // 设置缓存项空闲时间最多为2s 
+            .expireAfterAccess(2, TimeUnit.SECONDS) // 设置缓存项无读写请求的空闲时间最多为2s 
             .build(cacheLoader);
     System.out.println(cache.getUnchecked("first"));//FIRST
     TimeUnit.SECONDS.sleep(1);
@@ -171,9 +173,9 @@ public static void testEvictByGtIdle() throws InterruptedException {
 
 ---
 
-## 【2.4】通过缓存项的存活时间ttl来清除
+## 【2.4】通过缓存项的更新时间来清除
 
-【例：设置缓存项存活时间ttl为2s，2s后清除缓存】
+【例】expireAfterWrite(2, TimeUnit.SECONDS)-超过2s没有更新，则该缓存失效
 
 ```java
 public static void testEvictByTtl() throws InterruptedException {
@@ -187,7 +189,7 @@ public static void testEvictByTtl() throws InterruptedException {
 
     // 根据cache加载器创建缓存
     LoadingCache<String, String> cache = CacheBuilder.newBuilder()
-            .expireAfterWrite(2, TimeUnit.SECONDS) // 设置缓存项存活时间最多为2s
+            .expireAfterWrite(2, TimeUnit.SECONDS) // 超过2s没有更新，则该缓存失效
             .build(cacheLoader);
     System.out.println(cache.getUnchecked("first"));//FIRST
     TimeUnit.SECONDS.sleep(1);
@@ -273,6 +275,119 @@ public static void testEvictBySoftReference() throws InterruptedException {
 默认情况下，当我们尝试加载值为null的缓存时，guava会抛出异常，因为null是没有意义的。
 
 但是，如果一个null值在我们的代码中有意义，则可以使用Optional类来读取值为null的缓存项。
+
+```java
+public static void testWhenNullThenOptional() throws InterruptedException {
+    // 值为Optional实例创建cache加载器
+    CacheLoader<String, Optional<String>> cacheLoader = new CacheLoader<>() {
+        @Override
+        public Optional<String> load(String key) throws Exception {
+            return Optional.fromNullable(getSuffix(key));
+        }
+    };
+
+    // 根据cache加载器创建缓存
+    LoadingCache<String, Optional<String>> cache = CacheBuilder.newBuilder()
+            .build(cacheLoader);
+    System.out.println(cache.getUnchecked("test.txt").get()); // txt
+    System.out.println(cache.getUnchecked("hello").isPresent()); // false
+}
+
+private static String getSuffix(String str) {
+    int lastIndex = str.lastIndexOf(".");
+    if (lastIndex == -1) {
+        return null;
+    }
+    return str.substring(lastIndex + 1);
+}
+```
+
+<br>
+
+---
+
+# 【6】刷新缓存
+
+## 【6.1】手动刷新缓存
+
+使用LoadingCache.refresh(key) 手动刷新缓存。
+
+refresh()方法会强行让LoadingCache加载键key的缓存值value。<font color=red>直到新缓存值成功加载，get(key)会返回之前的缓存值value</font>。
+
+```java
+public static void testGuava01() throws ExecutionException {
+    // 创建cache加载器
+    CacheLoader<String, String> cacheLoader = new CacheLoader<>() {
+        @Override
+        public String load(String key) throws Exception {
+            return key.toUpperCase();
+        }
+    };
+    // 根据cache加载器创建缓存
+    LoadingCache<String, String> loadingCache = CacheBuilder.newBuilder().build(cacheLoader);
+    System.out.println(loadingCache.get("first")); // 第1次获取key=first的缓存值
+    loadingCache.refresh("first");
+    System.out.println(loadingCache.get("first")); // 第2次获取key=first的缓存值
+}
+```
+
+<br>
+
+---
+
+## 【6.2】自动刷新
+
+我们也可以使用 *CacheBuilder.refreshAfterWrite(duration)*  自动刷新缓存值。
+
+需要注意的是，`refreshAfterWrite(duration)` 仅使键在指定的持续时间后才有资格刷新。<font color=red>实际上，只有当使用 `get(key)` 查询相应的条目时，值才会真正刷新</font>。
+
+refreshAfterWrite(1,TimeUnit.MINUTES)：缓存项key-value写入1分钟后才刷新；
+
+```java
+public static void testRefreshAfterWrite() throws ExecutionException {
+    // 创建cache加载器
+    CacheLoader<String, String> cacheLoader = new CacheLoader<>() {
+        @Override
+        public String load(String key) throws Exception {
+            System.out.println("load方法，创建缓存key-value键值对");
+            return key.toUpperCase();
+        }
+    };
+    // 根据cache加载器创建缓存
+    LoadingCache<String, String> loadingCache = CacheBuilder.newBuilder()
+            .refreshAfterWrite(1, TimeUnit.MINUTES) // 设置自动刷新时间为1分钟
+            .build(cacheLoader);
+    System.out.println(loadingCache.get("first")); // 第1次获取key=first的缓存值, 输出FIRST
+    System.out.println(loadingCache.get("first")); // 第2次获取key=first的缓存值, 输出FIRST
+    System.out.println(loadingCache.get("second")); // 第1次获取key=second的缓存值， 输出SECOND
+    System.out.println(loadingCache.getUnchecked("third")); // 第1次获取key=third的缓存值, 输出THIRD
+}
+```
+
+【打印结果】
+
+```c++
+FIRST
+FIRST
+load方法，创建缓存key-value键值对
+SECOND
+load方法，创建缓存key-value键值对
+THIRD
+```
+
+<br>
+
+---
+
+
+
+
+
+
+
+
+
+
 
 
 
