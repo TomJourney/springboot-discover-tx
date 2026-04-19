@@ -5,15 +5,13 @@ import com.tom.springboot.tx.note.domain.user.support.IUserSupport;
 import com.tom.springboot.tx.note.infrastructure.converter.UserConverter;
 import com.tom.springboot.tx.note.infrastructure.dao.user.mapper.UserMapper;
 import com.tom.springboot.tx.note.infrastructure.dao.useraccount.mapper.UserAccountMapper;
-import com.tom.springboot.tx.note.infrastructure.dao.useraccount.mapper.UserAccountPO;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.tomcat.jdbc.pool.DataSource;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.jdbc.support.JdbcTransactionManager;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.math.BigDecimal;
 import java.util.Random;
 
 /**
@@ -38,9 +36,12 @@ public class UserSupportImpl implements IUserSupport {
     @Autowired
     UserAccountMapper userAccountMapper;
 
+    @Autowired
+    private DataSource dataSource;
+
     @Override
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     public void saveNewUser(UserEntity userEntity) {
-
+        log.info("getIdle={}, getNumIdle={}", dataSource.getIdle(), dataSource.getNumIdle());
     }
 }

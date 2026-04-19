@@ -1,7 +1,9 @@
 package com.tom.springboot.tx.note.infrastructure.springboot.scheduler;
 
 import com.tom.springboot.tx.note.infrastructure.common.util.BusiDateTimeUtils;
+import com.tom.springboot.tx.note.infrastructure.dao.useraccount.mapper.UserAccountMapper;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.tomcat.jdbc.pool.DataSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -19,16 +21,16 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
  */
 @Component
 @Slf4j
-public class BusiProbeRedisScheduleTask {
+public class BusiProbeDataSrcScheduleTask {
 
     @Autowired
-    @Qualifier("taskScheduler")
-    private ScheduledThreadPoolExecutor taskScheduler;
+    private DataSource dataSource;
 
-    @Scheduled(fixedRate = 30000)
+    @Autowired
+    private UserAccountMapper userAccountMapper;
+
+    @Scheduled(fixedRate = 10)
     public void reportCurTime() {
-        BlockingQueue<Runnable> queue = taskScheduler.getQueue();
-        log.info("reportCurTime: curTime = {}, threadName={}, blockQueueSize={}"
-                , BusiDateTimeUtils.getNowText(), Thread.currentThread().getName(), queue.size());
+        log.info("userSize = {}", userAccountMapper.selectUserId());
     }
 }

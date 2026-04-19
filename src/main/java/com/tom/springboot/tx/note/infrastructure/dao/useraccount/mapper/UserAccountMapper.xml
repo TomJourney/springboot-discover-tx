@@ -14,4 +14,8 @@
         into user_account_tbl(user_id, balance)
         values (#{userId}, #{balance})
     </insert>
+
+    <select id="selectUserId" resultType="string">
+        select user_id from user_account_tbl where 1=1
+    </select>
 </mapper>
