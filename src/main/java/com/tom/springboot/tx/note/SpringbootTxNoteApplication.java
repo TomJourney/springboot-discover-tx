@@ -3,7 +3,6 @@ package com.tom.springboot.tx.note;
 import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.scheduling.annotation.EnableScheduling;
 
 /**
  * @author Tom
@@ -12,7 +11,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
  * @Description TODO
  * @createTime 2024年12月01日 16:17:00
  */
-@SpringBootApplication
+@SpringBootApplication(scanBasePackages = {"com.tom.springboot.tx.note", "com.tom.tx.srccode.analysis"})
 @MapperScan(basePackages = {"com.tom.springboot.tx.note.infrastructure.dao"})
 public class SpringbootTxNoteApplication {
 

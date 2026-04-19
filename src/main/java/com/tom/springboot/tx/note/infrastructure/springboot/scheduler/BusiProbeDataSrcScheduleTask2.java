@@ -24,7 +24,7 @@ public class BusiProbeDataSrcScheduleTask2 {
     @Autowired
     private UserAccountMapper userAccountMapper;
 
-    @Scheduled(fixedRate = 10)
+    @Scheduled(fixedRate = 3600000)
     public void reportCurTime() {
         log.info("userSize = {}", userAccountMapper.selectUserId());
     }

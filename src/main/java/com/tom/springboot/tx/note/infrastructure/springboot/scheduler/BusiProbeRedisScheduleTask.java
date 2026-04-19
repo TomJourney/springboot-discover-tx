@@ -25,7 +25,7 @@ public class BusiProbeRedisScheduleTask {
     @Qualifier("taskScheduler")
     private ScheduledThreadPoolExecutor taskScheduler;
 
-    @Scheduled(fixedRate = 30000)
+    @Scheduled(fixedRate = 3600000)
     public void reportCurTime() {
         BlockingQueue<Runnable> queue = taskScheduler.getQueue();
         log.info("reportCurTime: curTime = {}, threadName={}, blockQueueSize={}"
