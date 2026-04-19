@@ -5,6 +5,10 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
+import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.interceptor.TransactionAspectSupport;
+import org.springframework.transaction.interceptor.TransactionAttribute;
 
 import javax.sql.DataSource;
 
@@ -42,5 +46,13 @@ public class AppConfig {
         DataSourceTransactionManager dataSourceTransactionManager = new DataSourceTransactionManager();
         dataSourceTransactionManager.setDataSource(dataSource);
         return dataSourceTransactionManager;
+    }
+
+    @Transactional()
+    public void f1() {
+        TransactionAttribute transactionAttribute;
+        TransactionStatus transactionStatus;
+        TransactionAspectSupport transactionAspectSupport; //
+        DataSourceTransactionManager dataSourceTransactionManager;
     }
 }
