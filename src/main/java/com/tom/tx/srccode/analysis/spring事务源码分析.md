@@ -170,7 +170,31 @@ protected static final class TransactionInfo {
 }
 ```
 
+<br>
 
+---
+
+## 【1.3】spring事务的源码研究涉及的2大问题
+
+1. spring事务原理主要是两个大问题：
+   1. spirng如何完成拦截和增强的；
+   2. 增强逻辑及时什么？也就是它怎么开启事务，提交事务，回滚事务的？
+
+<br>
+
+### 【1.3.1】spring如何完成拦截与增强
+
+1. @EnableTransactionManagement：该注解的作用是增强含有@Transactional注解方法的bean；靠 BeanPostProcess-bean后置处理器； 
+   1. <font color=red>@EnableTransactionManagement主要导入了2个类</font>：
+      1. AutoProxyRegistrar :
+         1. 
+      2. ProxyTransactionManagementConfiguration ；
+         1. 
+2. 
+
+<br>
+
+【1.3.2】spirng事务增强逻辑（如何开启事务，提交事务，回滚事务）
 
 
 

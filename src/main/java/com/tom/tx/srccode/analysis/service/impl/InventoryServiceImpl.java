@@ -3,8 +3,11 @@ package com.tom.tx.srccode.analysis.service.impl;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.tom.tx.srccode.analysis.entity.InventoryEntity;
 import com.tom.tx.srccode.analysis.entity.OrderEntity;
-import com.tom.tx.srccode.analysis.mapper.InventoryMapper;
-import org.springframework.stereotype.Component;
+import com.tom.tx.srccode.analysis.mapper.inventory.InventoryMapper;
+import com.tom.tx.srccode.analysis.service.InventoryService;
+import com.tom.tx.srccode.analysis.service.OrderService;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,12 +19,23 @@ import org.springframework.transaction.annotation.Transactional;
  * @createTime 2026年04月19日 11:43:00
  */
 @Service("inventoryService")
-public class InventoryServiceImpl extends ServiceImpl<InventoryMapper, InventoryEntity> {
+@Slf4j
+public class InventoryServiceImpl extends ServiceImpl<InventoryMapper, InventoryEntity> implements InventoryService {
+
+    @Autowired
+    OrderService orderService;
 
     @Transactional(propagation = Propagation.REQUIRED)
     @Override
     public boolean save(InventoryEntity inventoryEntity) {
         super.save(inventoryEntity);
-        OrderEntity.builder().id("1").orderNo("20260419-01").orderName()
+        OrderEntity orderEntity = OrderEntity.builder().id("1").skuCode("1001").orderNo("2001").build();
+        try {
+            orderService.save(orderEntity);
+            return true;
+        } catch (Exception e) {
+            log.error("保存订单异常", e);
+        }
+        return false;
     }
 }

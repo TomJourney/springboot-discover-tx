@@ -13,6 +13,6 @@ import lombok.Getter;
 @Getter
 public class OrderEntity {
     private String id;
+    private String skuCode;
     private String orderNo;
-    private String orderName;
 }

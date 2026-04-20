@@ -1,11 +1,14 @@
 package com.tom.tx.srccode.analysis.config;
 
 import com.baomidou.mybatisplus.extension.spring.MybatisSqlSessionFactoryBean;
+import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.annotation.EnableTransactionManagement;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.interceptor.TransactionAspectSupport;
 import org.springframework.transaction.interceptor.TransactionAttribute;
@@ -19,6 +22,9 @@ import javax.sql.DataSource;
  * @createTime 2026年04月19日 09:55:00
  */
 @Configuration
+@EnableTransactionManagement
+@ComponentScan("com.tom.tx.srccode.analysis")
+@MapperScan("com/tom/tx/srccode/analysis/mapper/**/*.mapper.xml")
 public class AppConfig {
 
     @Bean

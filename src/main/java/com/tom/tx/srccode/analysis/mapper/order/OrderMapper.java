@@ -1,4 +1,4 @@
-package com.tom.tx.srccode.analysis.mapper;
+package com.tom.tx.srccode.analysis.mapper.order;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.tom.tx.srccode.analysis.entity.InventoryEntity;
@@ -9,5 +9,5 @@ import com.tom.tx.srccode.analysis.entity.InventoryEntity;
  * @Description TODO
  * @createTime 2026年04月19日 11:44:00
  */
-public class InventoryMapper implements BaseMapper<InventoryEntity> {
+public class OrderMapper implements BaseMapper<InventoryEntity> {
 }
