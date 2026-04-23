@@ -174,7 +174,7 @@ protected static final class TransactionInfo {
 
 ---
 
-## 【1.3】spring事务的源码研究涉及的2大问题
+# 【2】spring事务的源码研究涉及的2大问题
 
 1. spring事务原理主要是两个大问题：
    1. spirng如何完成拦截和增强的；
@@ -182,19 +182,119 @@ protected static final class TransactionInfo {
 
 <br>
 
-### 【1.3.1】spring如何完成拦截与增强
+## 【2.1】spring如何完成拦截与增强
 
-1. @EnableTransactionManagement：该注解的作用是增强含有@Transactional注解方法的bean；靠 BeanPostProcess-bean后置处理器； 
-   1. <font color=red>@EnableTransactionManagement主要导入了2个类</font>：
-      1. AutoProxyRegistrar :
-         1. 
-      2. ProxyTransactionManagementConfiguration ；
-         1. 
-2. 
+1. @EnableTransactionManagement：该注解的作用是增强含有@Transactional注解方法的bean；靠 BeanPostProcess-bean后置处理器来增强； 
+   1. <font color=red>@EnableTransactionManagement主要导入了2个类，包括AutoProxyRegistrar，ProxyTransactionManagementConfiguration </font>;
+
+
+### 【2.1.1】引入的第1个类：AutoProxyRegistrar-自动代理注册
+
+<font color=red>AutoProxyRegistrar给spring容器注册了后置处理器InfrastructureAdvisorAutoProxyCreator（BeanPostProcessor的实现类），后置处理器的after方法用于对bean进行增强</font>；
+
+```java
+@Import({TransactionManagementConfigurationSelector.class})
+public @interface EnableTransactionManagement {
+    boolean proxyTargetClass() default false;
+    AdviceMode mode() default AdviceMode.PROXY;
+    int order() default Integer.MAX_VALUE;
+}
+
+// TransactionManagementConfigurationSelector 是一个Selector
+public class TransactionManagementConfigurationSelector extends AdviceModeImportSelector<EnableTransactionManagement> {
+    protected String[] selectImports(AdviceMode adviceMode) {
+        String[] var10000;
+        switch (adviceMode) {
+            case PROXY -> var10000 = new String[]{AutoProxyRegistrar.class.getName(), ProxyTransactionManagementConfiguration.class.getName()};
+            case ASPECTJ -> var10000 = new String[]{this.determineTransactionAspectClass()};
+            default -> throw new IncompatibleClassChangeError();
+        }
+        return var10000;
+    }
+}
+// Selector的作用是: 实现ImportSelector类重写selectImports方法，该方法返回的字符串数组是全限定类名，则spring会将其视为BeanDefinition进行bean实例化
+public interface ImportSelector {
+	String[] selectImports(AnnotationMetadata importingClassMetadata);
+}
+
+// 所以：@EnableTransactionManagement主要导入了2个类，包括AutoProxyRegistrar，ProxyTransactionManagementConfiguration 
+```
 
 <br>
 
-【1.3.2】spirng事务增强逻辑（如何开启事务，提交事务，回滚事务）
+【AutoProxyRegistrar】实现ImportBeanDefinitionRegistrar接口，给spring容器当中注册了一个后置处理器InfrastructureAdvisorAutoProxyCreator；
+
+- InfrastructureAdvisorAutoProxyCreator: 实现了后置处理器 BeanPostProcessor，其after方法用户创建bean的代理；
+
+```java
+public class AutoProxyRegistrar implements ImportBeanDefinitionRegistrar {
+  // 用户注册BeanDefinition，这个bean是InfrastructureAdvisorAutoProxyCreator
+  // InfrastructureAdvisorAutoProxyCreator
+}
+
+// InfrastructureAdvisorAutoProxyCreator: 实现了后置处理器 BeanPostProcessor
+public class InfrastructureAdvisorAutoProxyCreator extends AbstractAdvisorAutoProxyCreator {
+    @Nullable
+    private ConfigurableListableBeanFactory beanFactory;
+
+    protected void initBeanFactory(ConfigurableListableBeanFactory beanFactory) {
+        super.initBeanFactory(beanFactory);
+        this.beanFactory = beanFactory;
+    }
+//...
+}
+
+// BeanPostProcessor: bean后置处理器接口，用于bean生命周期管理 
+public interface BeanPostProcessor {
+    @Nullable
+    default Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
+        return bean;
+    }
+    // after方法主要用于创建bean的代理
+    @Nullable
+    default Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {
+        return bean;
+    }
+}
+
+// 后置处理器 AbstractAutoProxyCreator 的postProcessBeforeInstantiation()与postProcessAfterInitialization
+// after方法调用wrapIfNecessary方法，wrapIfNecessary方法创建代理
+public Object postProcessAfterInitialization(@Nullable Object bean, String beanName) {
+        if (bean != null) {
+            Object cacheKey = this.getCacheKey(bean.getClass(), beanName);
+            if (this.earlyBeanReferences.remove(cacheKey) != bean) {
+                return this.wrapIfNecessary(bean, beanName, cacheKey);// 
+            }
+        }
+        return bean;
+    }
+```
+
+<br>
+
+【总结】<font color=red>@EnableTransactionManagement注解作用</font>：
+
+1. 用来拦截符合规则的业务类；
+2. 创建bean的代理（增强bean）；因为该注解导入了一个后置处理器，对所有符合规则的bean进行增强；
+
+<br>
+
+### 【2.1.1】引入的第2个类：ProxyTransactionManagementConfiguration-配置类
+
+1. spring-aop代理：增强bean（传统aop）所需做的工作
+   1. 定义一个切面-Advisor，是一个类；（<font color=red> Advisor可以翻译为切面顾问或通知顾问 </font>）
+   2. 定义一个切点 pointCut；
+   3. 定义一个连接点JointPoint（描述需要被增强的规则，即哪些类哪些方法需要被增强）， 属于切点的一条记录，即多个连接点组成一个切点； 
+   4. 通知-Advice：invoke方法，即增强逻辑；
+
+2. ProxyTransactionManagementConfiguration是配置类：一般是提供加了@Bean注解的方法，用于注册bean；共注册了3个bean；
+   1. BeanFactoryTransactionAttributeSourceAdvisor：
+
+
+
+<br>
+
+## 【2.2】spirng事务增强逻辑（如何开启事务，提交事务，回滚事务）
 
 
 
