@@ -347,7 +347,7 @@ public class ProxyTransactionManagementConfiguration extends AbstractTransaction
 
 3. BeanFactoryTransactionAttributeSourceAdvisor：创建时有2个参数：
    1. TransactionAttributeSource ： ； 
-   2. TransactionInterceptor ： 他就是通知，通知就是增强逻辑；
+   2. <font color=red>TransactionInterceptor ： 他就是通知，通知就是增强逻辑（@Transactional注解方法的增强逻辑）</font>；
 
 ```java
 @Role(2)
@@ -369,8 +369,52 @@ public BeanFactoryTransactionAttributeSourceAdvisor transactionAdvisor(Transacti
 
 4. 执行带有@Transactional注解的方法，先执行TransactionInterceptor.invoke()方法的增强逻辑，然后再执行目标方法；【原因说明】
    1. spring创建bean时，通过JDK动态代理创建；
-      1. 
    2. TransactionInterceptor实现了MethodInterceptor，重写其invoke()方法；
+      1. <font color=red>因为 MethodInterceptor 是spring事务通知（即增强逻辑）</font>，详情参见[springBean创建步骤与spring事务增强逻辑分析](https://blog.csdn.net/PacosonSWJTU/article/details/160504545?sharetype=blogdetail&sharerId=160504545&sharerefer=PC&sharesource=PacosonSWJTU&spm=1011.2480.3001.8118)
+
+<br>
+
+### @Transactional注解方法的底层执行流程：
+
+调用@Transactional注解的方法，底层是调用 MethodInterceptor的invoke方法；
+
+```java
+public class TransactionInterceptor extends TransactionAspectSupport implements MethodInterceptor, Serializable {
+    public TransactionInterceptor() {
+    }
+
+    public TransactionInterceptor(TransactionManager ptm, TransactionAttributeSource tas) {
+        this.setTransactionManager(ptm);
+        this.setTransactionAttributeSource(tas);
+    }
+
+    /** @deprecated */
+    @Deprecated
+    public TransactionInterceptor(PlatformTransactionManager ptm, TransactionAttributeSource tas) {
+        this.setTransactionManager(ptm);
+        this.setTransactionAttributeSource(tas);
+    }
+
+    /** @deprecated */
+    @Deprecated
+    public TransactionInterceptor(PlatformTransactionManager ptm, Properties attributes) {
+        this.setTransactionManager(ptm);
+        this.setTransactionAttributes(attributes);
+    }
+
+  // 通知， @Transactional注解方法的增强逻辑  
+    @Nullable
+    public Object invoke(MethodInvocation invocation) throws Throwable {
+        Class<?> targetClass = invocation.getThis() != null ? AopUtils.getTargetClass(invocation.getThis()) : null;
+        Method var10001 = invocation.getMethod();
+        Objects.requireNonNull(invocation);
+      // 调用 TransactionAspectSupport-invokeWithinTransaction(..)方法 
+        return this.invokeWithinTransaction(var10001, targetClass, invocation::proceed);
+    }
+}
+```
+
+
 
 <br>
 
