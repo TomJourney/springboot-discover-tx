@@ -279,7 +279,7 @@ public Object postProcessAfterInitialization(@Nullable Object bean, String beanN
 
 <br>
 
-### 【2.1.1】引入的第2个类：ProxyTransactionManagementConfiguration-配置类
+### 【2.1.2】引入的第2个类：ProxyTransactionManagementConfiguration-配置类
 
 1. spring-aop代理：增强bean（传统aop）所需做的工作
    1. 定义一个切面-Advisor，是一个类；（<font color=red> Advisor可以翻译为切面顾问或通知顾问 </font>）
@@ -376,7 +376,7 @@ public BeanFactoryTransactionAttributeSourceAdvisor transactionAdvisor(Transacti
 
 ### @Transactional注解方法的底层执行流程：
 
-调用@Transactional注解的方法，底层是调用 MethodInterceptor的invoke方法；
+调用@Transactional注解的方法，底层是调用 MethodInterceptor的invoke方法；<font color=red>MethodInterceptor就是spring事务方法的通知（增强逻辑）</font>；
 
 ```java
 public class TransactionInterceptor extends TransactionAspectSupport implements MethodInterceptor, Serializable {
@@ -414,13 +414,30 @@ public class TransactionInterceptor extends TransactionAspectSupport implements 
 }
 ```
 
-
-
 <br>
 
 ---
 
-## 【2.2】spirng事务增强逻辑（如何开启事务，提交事务，回滚事务）
+## 【2.3】spring事务的通知与切点
+
+1. 通知：增强逻辑；由MethodInterceptor实现；  
+2. 切点：aop拦截规则，即找到要进行spring事务增强的类与方法； 
+
+---
+
+### 【2.3.1】spring事务切点（对哪些方法添加事务增强逻辑）
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
