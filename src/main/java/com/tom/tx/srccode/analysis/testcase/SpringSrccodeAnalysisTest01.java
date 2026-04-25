@@ -3,6 +3,7 @@ package com.tom.tx.srccode.analysis.testcase;
 import com.tom.tx.srccode.analysis.config.AppConfig;
 import com.tom.tx.srccode.analysis.entity.InventoryEntity;
 import com.tom.tx.srccode.analysis.service.InventoryService;
+import org.springframework.aop.framework.autoproxy.InfrastructureAdvisorAutoProxyCreator;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 
 /**
@@ -20,5 +21,7 @@ public class SpringSrccodeAnalysisTest01 {
         InventoryService inventoryService = context.getBean(InventoryService.class);
         InventoryEntity inventoryEntity = InventoryEntity.builder().id("kc001").quantity(10).skuCode("1001").build();
         inventoryService.save(inventoryEntity);
+
+        InfrastructureAdvisorAutoProxyCreator creator;
     }
 }

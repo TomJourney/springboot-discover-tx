@@ -178,7 +178,7 @@ protected static final class TransactionInfo {
 
 1. spring事务原理主要是两个大问题：
    1. spirng如何完成拦截和增强的；
-   2. 增强逻辑及时什么？也就是它怎么开启事务，提交事务，回滚事务的？
+   2. 增强逻辑是什么？也就是它怎么开启事务，提交事务，回滚事务的？
 
 <br>
 
@@ -287,12 +287,94 @@ public Object postProcessAfterInitialization(@Nullable Object bean, String beanN
    3. 定义一个连接点JointPoint（描述需要被增强的规则，即哪些类哪些方法需要被增强）， 属于切点的一条记录，即多个连接点组成一个切点； 
    4. 通知-Advice：invoke方法，即增强逻辑；
 
-2. ProxyTransactionManagementConfiguration是配置类：一般是提供加了@Bean注解的方法，用于注册bean；共注册了3个bean；
-   1. BeanFactoryTransactionAttributeSourceAdvisor：
+2. ProxyTransactionManagementConfiguration是配置类：一般是提供加了@Bean注解的方法，用于注册bean；<font color=red>共注册了3个bean</font>：
+   1. BeanFactoryTransactionAttributeSourceAdvisor；
+
+   2. TransactionAttributeSource； 
+
+   3. TransactionInterceptor ；
 
 
+```java
+@Configuration(proxyBeanMethods = false)
+@Role(2)
+@ImportRuntimeHints({TransactionRuntimeHints.class})
+public class ProxyTransactionManagementConfiguration extends AbstractTransactionManagementConfiguration {
+    
+  @Bean(name={"org.springframework.transaction.config.internalTransactionAdvisor"})
+    @Role(2)
+    public BeanFactoryTransactionAttributeSourceAdvisor transactionAdvisor(TransactionAttributeSource transactionAttributeSource, TransactionInterceptor transactionInterceptor) {
+        BeanFactoryTransactionAttributeSourceAdvisor advisor = new BeanFactoryTransactionAttributeSourceAdvisor();
+        advisor.setTransactionAttributeSource(transactionAttributeSource);
+        advisor.setAdvice(transactionInterceptor);
+        if (this.enableTx != null) {
+            advisor.setOrder((Integer)this.enableTx.getNumber("order"));
+        }
+
+        return advisor;
+    }
+
+    @Bean
+    @Role(2)
+    public TransactionAttributeSource transactionAttributeSource() {
+        return new AnnotationTransactionAttributeSource(false);
+    }
+
+    @Bean
+    @Role(2)
+    public TransactionInterceptor transactionInterceptor(TransactionAttributeSource transactionAttributeSource) {
+        TransactionInterceptor interceptor = new TransactionInterceptor();
+        interceptor.setTransactionAttributeSource(transactionAttributeSource);
+        if (this.txManager != null) {
+            interceptor.setTransactionManager(this.txManager);
+        }
+
+        return interceptor;
+    }
+}
+```
 
 <br>
+
+### 【ProxyTransactionManagementConfiguration注册的3个bean】第1个bean：BeanFactoryTransactionAttributeSourceAdvisor-定义一个aop切面
+
+1. <font color=red>BeanFactoryTransactionAttributeSourceAdvisor：spring事务最重要的类，它是一个切面类</font>，基于aop增量@Transactional注解方法，实现事务管理；
+2. <font color=red>Advisor切面类补充</font>：spring-aop代理：增强bean（传统aop）所需做的工作
+   1. 定义一个切面-Advisor，是一个类；（<font color=red> Advisor可以翻译为切面顾问或通知顾问 </font>）
+   2. 定义一个切点 pointCut；
+   3. 定义一个连接点JointPoint（描述需要被增强的规则，即哪些类哪些方法需要被增强）， 属于切点的一条记录，即多个连接点组成一个切点； 
+   4. 通知-Advice：invoke方法，即增强逻辑；
+
+3. BeanFactoryTransactionAttributeSourceAdvisor：创建时有2个参数：
+   1. TransactionAttributeSource ： ； 
+   2. TransactionInterceptor ： 他就是通知，通知就是增强逻辑；
+
+```java
+@Role(2)
+public BeanFactoryTransactionAttributeSourceAdvisor transactionAdvisor(TransactionAttributeSource transactionAttributeSource, TransactionInterceptor transactionInterceptor) {
+    BeanFactoryTransactionAttributeSourceAdvisor advisor = new BeanFactoryTransactionAttributeSourceAdvisor();
+    advisor.setTransactionAttributeSource(transactionAttributeSource);
+    advisor.setAdvice(transactionInterceptor);
+    if (this.enableTx != null) {
+        advisor.setOrder((Integer)this.enableTx.getNumber("order"));
+    }
+    return advisor;
+}
+
+// TransactionInterceptor定义
+
+```
+
+<br>
+
+4. 执行带有@Transactional注解的方法，先执行TransactionInterceptor.invoke()方法的增强逻辑，然后再执行目标方法；【原因说明】
+   1. spring创建bean时，通过JDK动态代理创建；
+      1. 
+   2. TransactionInterceptor实现了MethodInterceptor，重写其invoke()方法；
+
+<br>
+
+---
 
 ## 【2.2】spirng事务增强逻辑（如何开启事务，提交事务，回滚事务）
 
