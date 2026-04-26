@@ -9,5 +9,5 @@ import com.tom.tx.srccode.analysis.entity.InventoryEntity;
  * @Description TODO
  * @createTime 2026年04月19日 11:44:00
  */
-public class OrderMapper implements BaseMapper<InventoryEntity> {
+public class OrderMapper {
 }

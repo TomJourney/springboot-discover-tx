@@ -12,8 +12,7 @@ import com.tom.tx.srccode.analysis.service.InventoryService;
  * @Description TODO
  * @createTime 2026年04月20日 21:47:00
  */
-public class OrderServiceImpl extends ServiceImpl<OrderMapper, OrderEntity> implements InventoryService {
-    @Override
+public class OrderServiceImpl  {
     public boolean save(InventoryEntity entity) {
         return false;
     }
