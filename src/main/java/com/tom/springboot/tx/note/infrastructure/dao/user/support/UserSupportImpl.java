@@ -43,5 +43,7 @@ public class UserSupportImpl implements IUserSupport {
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     public void saveNewUser(UserEntity userEntity) {
         log.info("getIdle={}, getNumIdle={}", dataSource.getIdle(), dataSource.getNumIdle());
+        // 保存用户
+        userMapper.insertUser(userConverter.toPO(userEntity));
     }
 }

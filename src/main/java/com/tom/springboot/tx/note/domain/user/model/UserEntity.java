@@ -13,8 +13,14 @@ import lombok.Getter;
 @Builder
 @Getter
 public class UserEntity {
-    private Integer user;
-    private String name;
+    private Integer userId;
+    private String userName;
     private String mobilePhone;
     private String address;
+
+    public UserEntity assembleUserId(Integer userId) {
+        this.userId = userId;
+        return this;
+    }
+
 }

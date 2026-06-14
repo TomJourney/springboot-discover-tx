@@ -7,6 +7,8 @@ import com.tom.springboot.tx.note.infrastructure.dao.user.mapper.UserMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
+
 /**
  * @author Tom
  * @version 1.0.0
@@ -29,6 +31,6 @@ public class UserAppService {
 
     public void saveNewUser(UserEntity userEntity) {
         // saveNewUser标注有@Transaction
-        userSupport.saveNewUser(userEntity);
+        userSupport.saveNewUser(userEntity.assembleUserId(Long.hashCode(System.currentTimeMillis())));
     }
 }

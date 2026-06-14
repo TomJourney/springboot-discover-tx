@@ -2,10 +2,10 @@ package com.tom.springboot.tx.note.adapter.user.controller;
 
 import com.tom.springboot.tx.note.appilcation.user.dto.DataSourceConnNumDTO;
 import com.tom.springboot.tx.note.appilcation.user.dto.UserDTO;
-import com.tom.springboot.tx.note.appilcation.user.service.DataSourceAppService;
 import com.tom.springboot.tx.note.appilcation.user.service.UserAppService;
 import com.tom.springboot.tx.note.domain.user.assembler.UserAssembler;
 import com.tom.springboot.tx.note.infrastructure.dao.user.mapper.UserPO;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -18,10 +18,8 @@ import org.springframework.web.bind.annotation.*;
  */
 @RestController
 @RequestMapping("/springboot-tx")
+@Slf4j
 public class SpringbootTxNoteController {
-
-    @Autowired
-    private DataSourceAppService dataSourceAppService;
 
     @Autowired
     private UserAppService userAppService;
@@ -37,10 +35,6 @@ public class SpringbootTxNoteController {
     @PostMapping(path = "/add-user", consumes = "application/json")
     public void addUser(@RequestBody UserDTO userDTO) {
         userAppService.saveNewUser(userAssembler.toEntity(userDTO));
-    }
-
-    @GetMapping(path = "/idle")
-    public DataSourceConnNumDTO idle() {
-        return dataSourceAppService.qryDataSourceIdleNum();
+        log.info("保存用户成功，用户名={}", userDTO.getUserName());
     }
 }

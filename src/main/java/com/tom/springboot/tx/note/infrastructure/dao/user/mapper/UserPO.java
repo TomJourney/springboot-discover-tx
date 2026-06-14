@@ -11,8 +11,8 @@ import lombok.Data;
  */
 @Data
 public class UserPO {
-    private Integer id;
-    private String name;
+    private Integer userId;
+    private String userName;
     private String mobilePhone;
     private String address;
 }

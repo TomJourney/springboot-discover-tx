@@ -12,7 +12,9 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
  * @Description TODO
  * @createTime 2024年12月01日 16:17:00
  */
-@SpringBootApplication(scanBasePackages = {"com.tom.springboot.tx.note", "com.tom.tx.srccode.analysis"})
+//@SpringBootApplication(scanBasePackages = {"com.tom.springboot.tx.note", "com.tom.tx.srccode.analysis"})
+@SpringBootApplication(scanBasePackages = {"com.tom.springboot.tx.note"})
+@EnableTransactionManagement
 @MapperScan(basePackages = {"com.tom.springboot.tx.note.infrastructure.dao"})
 public class SpringbootTxNoteApplication {
 

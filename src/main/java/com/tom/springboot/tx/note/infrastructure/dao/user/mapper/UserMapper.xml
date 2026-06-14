@@ -3,14 +3,14 @@
 <mapper namespace="com.tom.springboot.tx.note.infrastructure.dao.user.mapper.UserMapper">
 
     <select id="qryUserById" resultType="com.tom.springboot.tx.note.infrastructure.dao.user.mapper.UserPO">
-        select id, name
+        select user_id, user_name
           from user_tbl
-         where id = #{id}
+         where user_id = #{userId}
     </select>
 
     <insert id="insertUser" parameterType="com.tom.springboot.tx.note.infrastructure.dao.user.mapper.UserPO">
         insert
-          into user_tbl(id, name, mobile_phone, addr)
-        values (#{id}, #{name}, #{mobilePhone}, #{address})
+          into user_tbl(user_id, user_name, mobile_phone, addr)
+        values (#{userId}, #{userName}, #{mobilePhone}, #{address})
     </insert>
 </mapper>

@@ -12,8 +12,7 @@ import lombok.Data;
 @Data
 public class UserDTO {
 
-    private Integer id;
-    private String name;
+    private String userName;
     private String mobilePhone;
     private String address;
 
