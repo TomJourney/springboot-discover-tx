@@ -14,7 +14,6 @@ import org.springframework.stereotype.Component;
  * @Description 探测redis状态定时任务
  * @createTime 2025年04月05日 21:24:00
  */
-@Component
 @Slf4j
 public class BusiProbeDataSrcScheduleTask3 {
 
