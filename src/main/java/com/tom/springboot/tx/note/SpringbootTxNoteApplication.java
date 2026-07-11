@@ -15,7 +15,7 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 //@SpringBootApplication(scanBasePackages = {"com.tom.springboot.tx.note", "com.tom.tx.srccode.analysis"})
 @SpringBootApplication(scanBasePackages = {"com.tom.springboot.tx.note"})
 @EnableTransactionManagement
-@MapperScan(basePackages = {"com.tom.springboot.tx.note.infrastructure.dao"})
+@MapperScan("com.tom.springboot.tx.note.infrastructure.dao")
 public class SpringbootTxNoteApplication {
 
     public static void main(String[] args) {

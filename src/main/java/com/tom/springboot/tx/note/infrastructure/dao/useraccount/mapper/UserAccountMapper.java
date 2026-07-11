@@ -1,7 +1,5 @@
 package com.tom.springboot.tx.note.infrastructure.dao.useraccount.mapper;
 
-import com.tom.springboot.tx.note.infrastructure.dao.user.mapper.UserPO;
-import org.apache.ibatis.annotations.Param;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
